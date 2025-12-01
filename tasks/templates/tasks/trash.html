@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>ゴミ箱</h1>
+
+    {# ============================================================================== #}
+    {# 1. 完全削除（パージ）と一括削除のフォーム #}
+    {# ============================================================================== #}
+    {% if tasks %}
+        
+        <form method="post" action="{% url 'task_bulk_delete' %}" 
+              {# フォーム送信前にユーザーに最終確認を求める #}
+              onsubmit="return confirm('選択したタスク、またはゴミ箱内のすべてのタスクを完全に削除してもよろしいですか？この操作は元に戻せません。');">
+            {% csrf_token %}
+
+            {# 一括削除/ゴミ箱を空にするボタン #}
+            {# チェックボックスが選択されていない場合、ビュー側で全削除と解釈される想定 #}
+            <button type="submit" class="btn btn-danger mb-3">選択したタスクを完全に削除 / ゴミ箱を空にする</button>
+
+            <ul class="list-group">
+            {# 削除済みタスクのリスト表示ループ #}
+            {% for task in tasks %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        {# 一括削除の対象とするためのチェックボックス #}
+                        <input type="checkbox" name="task_ids" value="{{ task.pk }}" class="form-check-input me-2">
+                        
+                        {# タスクのタイトルと削除日時を表示 #}
+                        <span class="text-muted">{{ task.title }}</span>
+                        <span class="text-muted small ms-3">(削除日: {{ task.deleted_at|date:"Y/m/d H:i" }})</span>
+                    </div>
+                    
+                    <div>
+                        {# 復元ボタン: JavaScriptで復元フォームを送信するために使用 #}
+                        <button type="button" class="btn btn-sm btn-success restore-btn" data-task-id="{{ task.pk }}">
+                            復元
+                        </button>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        </form>
+        
+        {# ============================================================================== #}
+        {# 2. タスク復元用の隠しフォーム #}
+        {# 各タスクの「復元」ボタンがクリックされたときに、このフォームを使ってPOST送信する #}
+        {# ============================================================================== #}
+        <form id="restore-form" method="post" style="display: none;" action="">
+            {% csrf_token %}
+            <input type="hidden" name="task_id" id="restore-task-id">
+        </form>
+        
+    {% else %}
+        {# ゴミ箱が空の場合のメッセージ #}
+        <div class="alert alert-info">
+            ゴミ箱は空です。
+        </div>
+    {% endif %}
+
+    {# ============================================================================== #}
+    {# 3. JavaScript: 復元ボタンの処理ロジック #}
+    {# ============================================================================== #}
+    <script>
+        // すべての「復元」ボタンにイベントリスナーを設定
+        document.querySelectorAll('.restore-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const taskId = this.getAttribute('data-task-id');
+                const form = document.getElementById('restore-form');
+                
+                // 復元処理のURLを動的に設定
+                // Djangoの task_restore URLパターンにタスクIDを埋め込む
+                // '{% url 'task_restore' pk=0 %}' を一時的に利用し、'/0/' を実際のIDに置き換える
+                form.action = "{% url 'task_restore' pk=0 %}".replace('/0/', '/' + taskId + '/');
+                
+                // 復元フォームを送信
+                form.submit();
+            });
+        });
+    </script>
+    
+{% endblock content %}

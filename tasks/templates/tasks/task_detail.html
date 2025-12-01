@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{{ task.title }}</h2>
+        
+        <div class="d-flex">
+            {# 編集ボタン: アウトライン警告色に変更 #}
+            <a href="{% url 'task_update' task.pk %}" class="btn btn-outline-warning me-3">
+                編集
+            </a>
+            
+            {# 削除フォームボタン（TaskDeleteViewへPOST） #}
+            <form action="{% url 'task_delete' task.pk %}" method="post" onsubmit="return confirm('本当にこのタスクを削除しますか？');">
+                {% csrf_token %}
+                {# 削除ボタン: アウトライン危険色に変更 #}
+                <button type="submit" class="btn btn-outline-danger">
+                    削除
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            
+            <h5 class="card-title mb-3">タスク情報</h5>
+            
+            <dl class="row mb-0"> 
+                <dt class="col-sm-3 text-dark fw-bold">期限:</dt>
+                <dd class="col-sm-9 text-dark fw-bold">
+                    {% if task.due_date %}
+                        {{ task.due_date|date:"Y年m月d日 H:i" }}
+                    {% else %}
+                        期限なし
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">進捗状況:</dt>
+                <dd class="col-sm-9">
+                    {% if task.get_status_display %}
+                        {% if task.status == 0 %}
+                            {# 未着手 (status=0): 赤色 (bg-danger) #}
+                            <span class="badge bg-danger text-white">{{ task.get_status_display }}</span>
+                        {% elif task.status == 1 %}
+                            {# 進行中 (status=1): 黄色 (bg-warning) #}
+                            <span class="badge bg-warning text-dark">{{ task.get_status_display }}</span>
+                        {% elif task.status == 2 %}
+                            {# 完了 (status=2): 緑色 (bg-success) #}
+                            <span class="badge bg-success text-white">{{ task.get_status_display }}</span>
+                        {% else %}
+                            {# 未定義・その他: 既存の青色 (bg-info) を維持 #}
+                            <span class="badge bg-info text-dark">{{ task.get_status_display }}</span>
+                        {% endif %}
+                    {% else %}
+                        未設定
+                    {% endif %}
+                </dd>
+                
+                {# ✨✨ 新規追加: 優先度 ✨✨ #}
+                <dt class="col-sm-3">優先度:</dt>
+                <dd class="col-sm-9">
+                    {% if task.priority == 'high' %}
+                        <span class="badge bg-danger">高</span>
+                    {% elif task.priority == 'medium' %}
+                        <span class="badge bg-warning text-dark">中</span>
+                    {% elif task.priority == 'low' %}
+                        <span class="badge bg-success">低</span> 
+                    {% else %}
+                        <span class="badge bg-secondary">なし</span>
+                    {% endif %}
+                </dd>
+                {# ✨✨ 優先度 ここまで ✨✨ #}
+                
+                <dt class="col-sm-3">カテゴリ:</dt>
+                <dd class="col-sm-9">
+                    {% if task.category %}
+                        <span class="badge bg-info text-nowrap">{{ task.category.name|default:"なし" }}</span>
+                    {% else %}
+                        <span class="badge bg-info text-nowrap">なし</span>
+                    {% endif %}
+                </dd>
+            
+                
+                <dt class="col-sm-3 text-muted">作成日:</dt>
+                <dd class="col-sm-9 text-muted small">
+                    {{ task.created_at|date:"Y年m月d日 H:i" }}
+                </dd>
+            </dl>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">詳細</h5>
+            <p class="card-text">{{ task.description|default:"詳細はありません。"|linebreaksbr }}</p>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-secondary">一覧に戻る</a>
+    </div>
+
+{% endblock content %}

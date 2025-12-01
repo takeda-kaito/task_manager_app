@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+    {# フォームのカスタムCSS #}
+    <style>
+        /* フォームラベルを常にブロック要素として扱い、独立した行を確保 */
+        .form-label {
+            display: block; 
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* カスタムCSSはすべて削除済み */
+    </style>
+    
+    {# ページタイトル: フォームインスタンス（タスクID）の有無で表示を切り替える #}
+    <h2>タスクの{% if form.instance.pk %}編集{% else %}新規作成{% endif %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {# ============================================================================== #}
+        {# 1. リダイレクト先URLを保持する hidden フィールド #}
+        {# フォーム処理後、どこに戻るべきかをビューに伝えるために使用 #}
+        {# ============================================================================== #}
+        {% if request.GET.next %}
+            {# URLパラメータ 'next' があればそれをリダイレクト先に設定 #}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% else %}
+            {# 'next' がない場合、HTTP Referer（直前のページ）をリダイレクト先の候補とする #}
+            {# 💡 ビュー側で request.META.HTTP_REFERER を取得して利用することが多い #}
+            <input type="hidden" name="next" value="{{ request.META.HTTP_REFERER|default:"" }}">
+        {% endif %}
+
+        {# ============================================================================== #}
+        {# 2. フォームフィールドのレンダリングループ #}
+        {# フィールド名に応じてBootstrapのグリッド幅 (col) を適用 #}
+        {# ============================================================================== #}
+        {% for field in form %}
+            
+            {# カテゴリフィールド: col-md-4 で幅を制限し、カテゴリ追加ボタンを隣接させる #}
+            {% if field.name == 'category' %}
+                <div class="mb-3 col-md-4"> 
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    <div class="input-group">
+                        {{ field }}
+                        {# カテゴリ作成ページへのリンク。遷移後、現在のタスクフォームに戻るために 'next' を設定 #}
+                        <a href="{% url 'category_create' %}?next={{ request.path }}" class="btn btn-outline-secondary" title="新しいカテゴリを作成">
+                            + カテゴリを追加
+                        </a>
+                    </div>
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            
+            {# 進捗状況 (status) フィールド: col-2 で幅を制限 #}
+            {% elif field.name == 'status' %}
+                <div class="mb-3 col-2">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            
+            {# 優先度 (priority) フィールド: col-2 で幅を制限 #}
+            {% elif field.name == 'priority' %}
+                <div class="mb-3 col-2">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+            {# 詳細（description）フィールド: col-md-8 で幅を制限 #}
+            {% elif field.name == 'description' %}
+                 <div class="mb-3 col-md-8">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            
+            {# 期限 (due_date) フィールド: グリッドシステムを使用せず、最大幅をCSSで指定し、フォームのデフォルト幅を避ける #}
+            {% elif field.name == 'due_date' %}
+                <div class="mb-3"> 
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    
+                    <div style="max-width: 250px;"> 
+                        {{ field }}
+                    </div>
+                    
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+            {# その他のフィールド（タイトルなど）: デフォルトの col-md-6 で幅を制限 #}
+            {% else %}
+                <div class="mb-3 col-md-6">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        
+        {# 3. 送信/キャンセルボタン #}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">保存</button>
+            
+            {# キャンセルボタン: リダイレクト先URL (cancel_url) があればそこへ、なければホームへ #}
+            <a href="{% if cancel_url %}{{ cancel_url }}{% else %}{% url 'home' %}{% endif %}" class="btn btn-secondary">
+                キャンセル
+            </a>
+        </div>
+
+    </form>
+
+{% endblock content %}

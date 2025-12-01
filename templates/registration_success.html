@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        {# 中央に配置し、幅を col-md-6 に制限 #}
+        <div class="col-md-6">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body text-center">
+                    
+                    {# 完了を祝うタイトル #}
+                    <h2 class="card-title mb-4 text-success">🎉 登録完了 🎉</h2>
+                    
+                    {# ユーザーへのメッセージ #}
+                    <p class="lead mb-4">
+                        <strong>ユーザー登録が完了しました！</strong>
+                    </p>
+                    
+                    {# ログイン画面へ移動するためのボタン #}
+                    <div class="d-grid gap-2 col-8 mx-auto">
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                            ログイン画面へ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

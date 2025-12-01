@@ -1,0 +1,73 @@
+{% comment %} 
+    ================================================================================
+    ソートヘッダーリンクのロジックを生成するテンプレートスニペット。
+    
+    役割: 
+    1. 現在のソートキー(current_sort)とソート順(current_order)を判定する。
+    2. 次にクリックしたときに適用すべきソート順(next_order)を決定し、リンクURLを構築する。
+    3. 現在のソート順に応じたアイコン (▲/▼) を表示する。
+    
+    受け取るコンテキスト変数: 
+    key (str): ソート対象のフィールド名 (例: 'due_date', 'title')
+    label (str): ヘッダーに表示するラベル名 (例: '期限')
+    base_url (str): 既存のフィルタリングパラメータを保持した URL クエリ文字列 (例: '?q=search&category=1&priority=high&')
+    current_sort (str): 現在ソート中のキー
+    current_order (str): 現在のソート順 ('asc' or 'desc')
+    ================================================================================
+{% endcomment %}
+
+{# -------------------------------------------------------------------------------- #}
+{# 1. 現在ソート中のキーかどうかを判定する #}
+{# -------------------------------------------------------------------------------- #}
+{% if current_sort == key %}
+    
+    {# 1-1. 現在ソート中のキーである場合 #}
+    
+    {% if current_order == 'asc' %}
+        
+        {# 現在昇順の場合: 次は降順 (desc) にする #}
+        {% with next_order='desc' %}
+            {# ベースURLに 'sort' と 'order' パラメータを追加し、完全なソートURLを生成 #}
+            {% with sort_url=base_url|add:'sort='|add:key|add:'&order='|add:next_order %}
+                <th scope="col">
+                    <a href="{% url 'home' %}{{ sort_url }}" class="text-decoration-none text-dark d-flex align-items-center">
+                        {{ label }}
+                        <span class="ms-2">▲</span> {# 昇順ソート中の表示 (上向き三角形) #}
+                    </a>
+                </th>
+            {% endwith %}
+        {% endwith %}
+        
+    {% else %}
+        
+        {# 現在降順の場合: 次は昇順 (asc) に戻す #}
+        {% with next_order='asc' %}
+            {# ベースURLに 'sort' と 'order' パラメータを追加し、完全なソートURLを生成 #}
+            {% with sort_url=base_url|add:'sort='|add:key|add:'&order='|add:next_order %}
+                <th scope="col">
+                    <a href="{% url 'home' %}{{ sort_url }}" class="text-decoration-none text-dark d-flex align-items-center">
+                        {{ label }}
+                        <span class="ms-2">▼</span> {# 降順ソート中の表示 (下向き三角形) #}
+                    </a>
+                </th>
+            {% endwith %}
+        {% endwith %}
+        
+    {% endif %}
+
+{% else %}
+    
+    {# 1-2. 現在ソート中でないキーである場合: クリックで昇順 (asc) ソートを開始する #}
+    {% with next_order='asc' %}
+        {# ベースURLに 'sort' と 'order' パラメータを追加し、ソート開始URLを生成 #}
+        {% with sort_url=base_url|add:'sort='|add:key|add:'&order='|add:next_order %}
+            <th scope="col">
+                <a href="{% url 'home' %}{{ sort_url }}" class="text-decoration-none text-dark d-flex align-items-center">
+                    {{ label }}
+                    <span class="ms-2"></span> {# ソート中の表示なし #}
+                </a>
+            </th>
+        {% endwith %}
+    {% endwith %}
+    
+{% endif %}

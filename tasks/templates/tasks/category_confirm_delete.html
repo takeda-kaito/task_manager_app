@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{# ページタイトルを設定 #}
+{% block title %}カテゴリ削除の確認{% endblock %}
+
+{% block content %}
+    
+    {# 警告アラート: 削除確認メッセージと影響をユーザーに伝える #}
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">カテゴリ削除の確認</h4>
+        <p>
+            {# 削除対象のカテゴリ名を表示 (オブジェクトは Django のデフォルトのコンテキスト変数) #}
+            カテゴリ <strong>「{{ object.name }}」</strong> を本当に削除しますか？
+        </p>
+        <p class="text-danger">
+            {# データベースの外部キー制約 (on_delete=SET_NULL または CASCADE) に基づく警告メッセージ #}
+            ※注意※<br>このカテゴリを参照しているタスクが存在する場合、それらのタスクのカテゴリフィールドがNULLになるか、またはタスク自体が削除される可能性があります。
+        </p>
+    </div>
+
+    {# 削除実行フォーム: POSTリクエストで削除ビューに送信する #}
+    <form method="post">
+        {% csrf_token %}
+        
+        {# 削除実行ボタン #}
+        <button type="submit" class="btn btn-danger me-2">削除する</button>
+        
+        {# キャンセルボタン: カテゴリ一覧画面に戻る #}
+        <a href="{% url 'category_list' %}" class="btn btn-secondary">キャンセル</a>
+    </form>
+{% endblock %}

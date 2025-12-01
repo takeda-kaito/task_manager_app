@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {# ページを中央寄せするためのBootstrapグリッド構造 #}
+    <div class="row justify-content-center">
+        {# 中規模デバイス以上で幅を col-md-6 に制限 #}
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">ログイン</h2>
+                    
+                    <div class="row justify-content-center">
+                        {# フォームの最大幅を col-lg-10 に制限 #}
+                        <div class="col-lg-10">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                {# ============================================================================== #}
+                                {# 1. フォームフィールドのレンダリング (通常、ユーザー名とパスワード) #}
+                                {# ============================================================================== #}
+                                {% for field in form %}
+                                    <div class="mb-3 row align-items-center">
+                                        
+                                        {# ラベル: スマホでは左寄せ、中規模デバイス以上では右寄せ #}
+                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">{{ field.label }}</label>
+                                        
+                                        {# 入力フィールドのコンテナ #}
+                                        <div class="col-sm-8">
+                                            {{ field }}
+                                        </div>
+                                        
+                                        {# フィールドごとのエラーメッセージを表示 #}
+                                        {% for error in field.errors %}
+                                            <div class="col-12">
+                                                <div class="alert alert-danger small mt-1">{{ error }}</div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                                
+                                {# ============================================================================== #}
+                                {# 2. ログインボタン #}
+                                {# ============================================================================== #}
+                                <div class="mb-3 row justify-content-center">
+                                    <div class="col-12"> 
+                                        <button type="submit" class="btn btn-primary w-100 mb-3">ログイン</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    {# 3. 新規登録への誘導リンク #}
+                    <p class="text-center">
+                        アカウントをお持ちでないですか？ <br>
+                        <a href="{% url 'register' %}">新規登録はこちら</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

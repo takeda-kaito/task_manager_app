@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    {# ヘッダー部分: タイトルとカテゴリ作成ボタンを左右に配置 #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>カテゴリ管理</h2>
+        {# カテゴリ作成ボタン: カテゴリ作成ビューへ遷移 #}
+        <a href="{% url 'category_create' %}" class="btn btn-primary">
+            + 新しいカテゴリを作成
+        </a>
+    </div>
+
+    {# カテゴリデータが存在する場合の処理 #}
+    {% if categories %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                {# テーブルヘッダー #}
+                <thead>
+                    <tr>
+                        <th scope="col">カテゴリ名</th>
+                        {# タスク数は中央寄せ #}
+                        <th scope="col" class="text-center">タスク数</th>
+                        {# 操作ボタンは右寄せ #}
+                        <th scope="col" class="text-end">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# カテゴリリストのループ処理 #}
+                    {% for category in categories %}
+                        <tr>
+                            <td>
+                                <strong>{{ category.name }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {# リレーションを通じたタスク数を表示 (Categoryモデルの task_set.count を利用) #}
+                                {{ category.task_set.count }}
+                            </td>
+                            {# 操作ボタン群: 常に一行に表示 (text-nowrap) #}
+                            <td class="text-end text-nowrap">
+                                
+                                {# 編集ボタン: 特定のカテゴリIDで更新ビューへ遷移 #}
+                                <a href="{% url 'category_update' category.pk %}" class="btn btn-sm btn-outline-warning me-2">
+                                    編集
+                                </a>
+                                
+                                {# 削除ボタン: 特定のカテゴリIDで削除ビューへ遷移 #}
+                                <a href="{% url 'category_delete' category.pk %}" class="btn btn-sm btn-outline-danger">
+                                    削除
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {# カテゴリデータが存在しない場合の処理 #}
+    {% else %}
+        <div class="alert alert-info">
+            まだカテゴリが登録されていません。
+        </div>
+    {% endif %}
+
+{% endblock content %}
