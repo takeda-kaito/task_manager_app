@@ -23,11 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-53f1s^*3t5p#ds++apb=4a_8rw5@zorf5=jg!)k!m-bo&(s%5a'
 
 # SECURITY WARNING: 本番環境では必ず False に設定すること。
-DEBUG = True
+DEBUG = False
 
 # このDjangoサイトがサービスを提供するホスト名を定義。
 # DEBUG=False の場合は、ここにドメイン名を指定する必要がある。
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # ==============================================================================
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 # HTTPリクエスト処理の途中で実行されるミドルウェアを定義。
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',  # CSRF保護
@@ -160,3 +161,23 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # ユーザー登録後の自動ログインを無効化する設定（明示的なログインを強制）。
 REGISTRATION_AUTO_LOGIN = False
+
+
+# ==============================================================================
+# 9. 本番環境（Render）向けの追加設定
+# ==============================================================================
+
+import os
+import dj_database_url
+
+# --- データベース設定の補完 ---
+# Renderの環境変数 DATABASE_URL がある場合、自動的に PostgreSQL に接続します
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
+
+# --- 静的ファイル (CSS/JS) の本番設定 ---
+# 本番環境で静的ファイルを集約するディレクトリを指定
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise（静的ファイル配信用のライブラリ）を使用するための設定
+# ※これを行うには MIDDLEWARE に WhiteNoise を追加する必要があります（後述）
