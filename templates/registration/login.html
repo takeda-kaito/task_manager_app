@@ -12,6 +12,16 @@
                     <div class="row justify-content-center">
                         {# フォームの最大幅を col-lg-10 に制限 #}
                         <div class="col-lg-10">
+
+                            {# フォーム全体のエラーメッセージ（パスワード間違いなど）を表示 #}
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
                             <form method="post">
                                 {% csrf_token %}
                                 
