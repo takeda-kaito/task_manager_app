@@ -10,3 +10,5 @@ python manage.py collectstatic --no-input
 
 # 3. データベースのマイグレーション（テーブル作成・更新）
 python manage.py migrate
+
+python manage.py createsuperuser --no-input --username admin --email takeda.kaito911@gmail.com || true
