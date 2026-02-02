@@ -181,6 +181,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # WhiteNoise（静的ファイル配信用のライブラリ）を使用するための設定
 # ※これを行うには MIDDLEWARE に WhiteNoise を追加する必要があります（後述）
-
-
-ALLOWED_HOSTS = ['192.168.1.42', 'localhost', '127.0.0.1']
