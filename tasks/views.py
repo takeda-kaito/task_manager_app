@@ -17,6 +17,7 @@ from .models import Task, Category
 # ORMの複雑なクエリ（Case, When, Qなど）に必要なモジュール
 from django.db.models import Case, When, Value, BooleanField, IntegerField, Q 
 from django.contrib.auth import get_user_model
+from django.contrib.auth import logout as auth_logout
 
 
 # 認証・ユーザーモデルの取得
@@ -30,7 +31,7 @@ User = get_user_model()
 class UserRegisterView(CreateView):
     """ユーザー登録フォームを表示し、バリデーションとユーザー作成を行う。"""
     form_class = UserRegisterForm # 使用するフォームを指定
-    success_url = reverse_lazy('registration_complete') # 登録成功後のリダイレクト先
+    success_url = reverse_lazy('registration_success') # 登録成功後のリダイレクト先
     template_name = 'registration/register.html' # 使用するテンプレート
 
 # ==============================================================================
@@ -251,19 +252,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy('task_detail', kwargs={'pk': self.object.pk})
     
     def form_valid(self, form):
-        """フォームが有効な場合の処理。主に 'next' パラメータによるリダイレクトを制御。"""
-        response = super().form_valid(form)
-        
-        # フォームに隠しフィールドとして渡された 'next' パラメータを取得
-        next_url = self.request.POST.get('next')
-        
-        # next_url が有効な場合はそちらにリダイレクトする
-        if next_url and next_url != 'None': 
-             # HTTPリクエストとしてリダイレクトURLを構築
-             return HttpResponseRedirect(next_url) 
-        
-        # next_url がない場合は、デフォルトの成功URL（get_success_url）にリダイレクト
-        return response
+        """
+        フォームが有効な場合の処理。
+        編集画面では複雑なリダイレクトを避け、一貫性を持たせるために
+        標準の成功URL（詳細画面）へ遷移させます。
+        """
+        # 親クラスの form_valid を呼ぶだけで、自動的に get_success_url の先へ飛びます
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         """キャンセルボタンの遷移先を制御するためのコンテキストを追加。"""
@@ -423,47 +418,37 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
-        """カテゴリ保存前に、所有者と重複チェックを行う。"""
-        form.instance.user = self.request.user # 所有者を設定
+        """カテゴリ保存前に、所有者設定と重複チェックを行う。"""
+        form.instance.user = self.request.user
         
-        # 同じユーザーが既に同じ名前のカテゴリを持っているかチェック
-        # (models.pyのunique_togetherで既にDBレベルで制御されているが、ここでフォームエラーとして返すことでUXを向上させる)
+        # 重複チェック
         if Category.objects.filter(
             user=self.request.user, 
             name=form.cleaned_data['name']
         ).exists():
-            # 重複がある場合、手動でフォームにエラーを追加し、処理を中断
             form.add_error('name', 'この名前のカテゴリは既に存在します。')
             return self.form_invalid(form)
             
-        return super().form_valid(form)
-    
-    # --- リダイレクト/キャンセルボタン制御 ---
-    
-    def get(self, request, *args, **kwargs):
-        """GETリクエスト時、リファラーURLをセッションに保存（キャンセルボタン用）。"""
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            request.session['category_create_referer'] = referer
-        return super().get(request, *args, **kwargs)
-    
-    def get_success_url(self):
-        """成功後のリダイレクト先をセッションから取得する。"""
-        # nextパラメータまたはセッションからリダイレクト先を取得
-        next_url = self.request.POST.get('next', self.request.session.get('category_create_referer', reverse_lazy('category_list')))
-        return next_url
+        # 保存処理を実行
+        response = super().form_valid(form)
+        
+        # 保存成功後、nextパラメータがあればそちらへ優先的にリダイレクト
+        next_url = self.request.POST.get('next')
+        if next_url:
+            return HttpResponseRedirect(next_url)
+            
+        return response
 
     def get_context_data(self, **kwargs):
-        """コンテキストにキャンセル/リダイレクト先URLを追加する。"""
+        """テンプレートに渡す変数を設定。"""
         context = super().get_context_data(**kwargs)
         
-        # テンプレートに次期遷移先URLを渡す
-        context['next_url'] = self.request.session.get('category_create_referer', reverse_lazy('category_list'))
+        # URLパラメータまたはPOSTデータから next を取得し、テンプレートに渡す
+        # (キャンセルボタンや hidden フィールドで使用)
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
         
-        # セッションからリファラー情報を削除（一回きりの使用のため）
-        if 'category_create_referer' in self.request.session:
-            del self.request.session['category_create_referer']
-            
+        # nextがない場合はデフォルトのカテゴリ一覧を戻り先にする
+        context['next_url'] = next_url if next_url else reverse_lazy('category_list')
         return context
 
 # カテゴリ編集（名前変更）用ビュー
@@ -545,3 +530,7 @@ def task_complete(request, pk):
     
     # POST以外でアクセスされた場合も一覧へリダイレクト
     return redirect('home')
+
+def logout_view(request):
+    auth_logout(request)
+    return redirect('login') # 'login' はログイン画面のURL名

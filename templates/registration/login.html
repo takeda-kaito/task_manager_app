@@ -1,72 +1,110 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {# ページを中央寄せするためのBootstrapグリッド構造 #}
-    <div class="row justify-content-center">
-        {# 中規模デバイス以上で幅を col-md-6 に制限 #}
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-center mb-4">ログイン</h2>
+
+{# ============================================================================== #}
+{# 1. カスタムCSS: 中央寄せと左揃えの制御 #}
+{# ============================================================================== #}
+<style>
+    /* 入力エリア全体のコンテナを中央に寄せる */
+    .form-group-container {
+        max-width: 300px;
+        margin: 0 auto; /* これで300pxのブロックごと中央へ */
+        text-align: left; /* 中の文字（ラベル）は左寄せ */
+    }
+
+    /* ラベルのスタイル */
+    .form-label {
+        display: block !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* 入力欄のスタイル */
+    input[type="text"], 
+    input[type="password"] {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        box-sizing: border-box;
+    }
+
+    /* エラーメッセージの幅を入力欄に合わせる */
+    .alert-danger {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+
+    /* 💡 ログインボタン：200pxに制限して中央寄せ */
+    .btn-login {
+        width: 100%;
+        max-width: 200px; 
+        display: block;
+        margin: 2rem auto 1rem auto; /* 上に余白を作り、左右オートで中央寄せ */
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="card-title text-center mb-4">ログイン</h2>
+
+                {# フォーム全体のエラーメッセージ #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mx-auto" style="max-width: 300px;">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
                     
-                    <div class="row justify-content-center">
-                        {# フォームの最大幅を col-lg-10 に制限 #}
-                        <div class="col-lg-10">
-
-                            {# フォーム全体のエラーメッセージ（パスワード間違いなど）を表示 #}
-                            {% if form.non_field_errors %}
-                                <div class="alert alert-danger">
-                                    {% for error in form.non_field_errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-
-                            <form method="post">
-                                {% csrf_token %}
+                    {# ============================================================================== #}
+                    {# 2. フォームフィールドのレンダリングループ #}
+                    {# ============================================================================== #}
+                    {% for field in form %}
+                        <div class="mb-4">
+                            {# 💡 このコンテナで「幅300px・中央配置・中身は左寄せ」を実現 #}
+                            <div class="form-group-container">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                </label>
                                 
-                                {# ============================================================================== #}
-                                {# 1. フォームフィールドのレンダリング (通常、ユーザー名とパスワード) #}
-                                {# ============================================================================== #}
-                                {% for field in form %}
-                                    <div class="mb-3 row align-items-center">
-                                        
-                                        {# ラベル: スマホでは左寄せ、中規模デバイス以上では右寄せ #}
-                                        <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label text-sm-end">{{ field.label }}</label>
-                                        
-                                        {# 入力フィールドのコンテナ #}
-                                        <div class="col-sm-8">
-                                            {{ field }}
-                                        </div>
-                                        
-                                        {# フィールドごとのエラーメッセージを表示 #}
-                                        {% for error in field.errors %}
-                                            <div class="col-12">
-                                                <div class="alert alert-danger small mt-1">{{ error }}</div>
-                                            </div>
-                                        {% endfor %}
+                                {{ field }}
+                                
+                                {% for error in field.errors %}
+                                    <div class="alert alert-danger py-1 px-3">
+                                        {{ error }}
                                     </div>
                                 {% endfor %}
-                                
-                                {# ============================================================================== #}
-                                {# 2. ログインボタン #}
-                                {# ============================================================================== #}
-                                <div class="mb-3 row justify-content-center">
-                                    <div class="col-12"> 
-                                        <button type="submit" class="btn btn-primary w-100 mb-3">ログイン</button>
-                                    </div>
-                                </div>
-                            </form>
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
                     
-                    {# 3. 新規登録への誘導リンク #}
-                    <p class="text-center">
-                        アカウントをお持ちでないですか？ <br>
-                        <a href="{% url 'register' %}">新規登録はこちら</a>
-                    </p>
-                </div>
+                    {# ============================================================================== #}
+                    {# 3. ログインボタン #}
+                    {# ============================================================================== #}
+                    <button type="submit" class="btn btn-primary btn-login">
+                        ログイン
+                    </button>
+                </form>
+
+                {# 新規登録への誘導リンク #}
+                <hr class="mx-auto" style="max-width: 300px;">
+                <p class="text-center mb-0 small">
+                    アカウントをお持ちでないですか？ <br>
+                    <a href="{% url 'register' %}" class="text-decoration-none">新規登録はこちら</a>
+                </p>
             </div>
         </div>
     </div>
+</div>
+
 {% endblock content %}

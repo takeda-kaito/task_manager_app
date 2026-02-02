@@ -1,78 +1,72 @@
 {% extends "base.html" %}
 
-{# ============================================================================== #}
-{# 1. メインコンテンツブロック (Django テンプレート) #}
-{# ============================================================================== #}
 {% block content %}
 
     <div class="mb-3">
-        {# ログインユーザー名を表示 #}
+        {# ユーザーへの挨拶表示 #}
         <p class="lead">ようこそ、{{ user.username }}さん！</p>
     </div>
 
-    <h1>タスク一覧</h1>
-
-    {# フィルタリング、検索、タスク作成ボタンを水平に配置するコンテナ #}
-    <div class="d-flex justify-content-between align-items-start mb-3">
+    {# ============================================================================== #}
+    {# 1. ヘッダーセクション: タイトルと検索窓 #}
+    {# flex-nowrap により、スマホ画面でも「タイトル」と「検索」が横に並び続けます #}
+    {# ============================================================================== #}
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-nowrap">
+        <h1 class="mb-0 fs-4 text-nowrap me-2">タスク一覧</h1>
         
-        {# フィルタリング/検索フォーム (GETリクエストでフィルタリングを実行) #}
-        <form method="get" id="filter-form" class="d-flex flex-wrap align-items-center"> 
-        
-            {# 検索フィールド #}
-            <div class="input-group input-group-sm me-3 mb-2" style="width: 250px;">
+        <form method="get" action="{% url 'home' %}" class="flex-grow-1 d-flex justify-content-end" style="max-width: 250px;">
+            <div class="input-group input-group-sm">
                 <input 
                     type="search" 
                     name="q" 
                     class="form-control" 
                     placeholder="タスクを検索..." 
-                    aria-label="検索キーワード"
-                    {# 現在の検索キーワードをフォームに保持 #}
                     value="{{ current_search_query|default:'' }}"
                 >
                 <button class="btn btn-outline-secondary" type="submit">🔍</button>
             </div>
+            {# ソート状態を維持するための隠しフィールド #}
+            <input type="hidden" name="sort" value="{{ current_sort_key }}">
+            <input type="hidden" name="order" value="{{ current_order }}">
+        </form>
+    </div>
 
-            <span class="fw-bold me-3 mb-2">フィルタ:</span>
+    {# ============================================================================== #}
+    {# 2. アクションボタン: タスク作成 #}
+    {# ============================================================================== #}
+    <div class="mb-4">
+        <a href="{% url 'task_create' %}" 
+           class="btn btn-primary text-nowrap" 
+           style="width: 180px; display: block; font-weight: 400;">
+            + タスクを新規作成
+        </a>
+    </div>
 
-            {# カテゴリフィルタ ドロップダウン #}
-            <div class="d-inline-block me-3 mb-2">
-                <label for="category-select" class="form-label visually-hidden">カテゴリでフィルタ</label>
-                <select 
-                    class="form-select form-select-sm" 
-                    name="category" 
-                    id="category-select" 
-                    {# 変更時にフォームを自動送信 #}
-                    onchange="document.getElementById('filter-form').submit();">
-                    
-                    <option value="">全てのカテゴリ</option> 
-                    
-                    {# カテゴリ 'なし' (Categoryが未設定のタスク) のオプション #}
-                    <option value="none" {% if current_category_filter == 'none' %}selected{% endif %}>
-                        なし
-                    </option>
-                    
-                    {# ユーザーが作成したカテゴリをループして表示 #}
+    {# ============================================================================== #}
+    {# 3. フィルタリングセクション #}
+    {# ============================================================================== #}
+    <div class="mb-4">
+        <form method="get" id="filter-form" class="d-flex align-items-center flex-nowrap overflow-auto pb-2">
+            <span class="fw-bold small me-2 text-nowrap">フィルタ:</span>
+            
+            {# --- カテゴリフィルタ --- #}
+            <div class="me-1">
+                <select class="form-select form-select-sm" name="category" onchange="this.form.submit();" style="width: 110px; font-size: 0.75rem;">
+                    <option value="">カテゴリ</option> 
+                    <option value="none" {% if current_category_filter == 'none' %}selected{% endif %}>なし</option>
                     {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category_id %}selected{% endif %}>
+                        {# current_category_filter と比較して一致すれば selected を付与 #}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == current_category_filter %}selected{% endif %}>
                             {{ category.name }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
             
-            {# 進捗状況フィルタ ドロップダウン #}
-            <div class="d-inline-block me-3 mb-2">
-                <label for="status-select" class="form-label visually-hidden">進捗状況でフィルタ</label>
-                <select 
-                    class="form-select form-select-sm" 
-                    name="status" 
-                    id="status-select" 
-                    {# 変更時にフォームを自動送信 #}
-                    onchange="document.getElementById('filter-form').submit();">
-                    
-                    <option value="">全ての進捗状況</option>
-                    
-                    {# Taskモデルで定義されたステータスの選択肢をループ #}
+            {# --- 進捗状況フィルタ --- #}
+            <div class="me-1">
+                <select class="form-select form-select-sm" name="status" onchange="this.form.submit();" style="width: 100px; font-size: 0.75rem;">
+                    <option value="">進捗</option>
                     {% for status_id, status_name in status_choices %}
                         <option value="{{ status_id }}" {% if status_id|stringformat:"s" == current_status_filter %}selected{% endif %}>
                             {{ status_name }}
@@ -81,19 +75,10 @@
                 </select>
             </div>
 
-            {# 優先度フィルタリング ドロップダウン #}
-            <div class="d-inline-block me-3 mb-2">
-                <label for="priority-select" class="form-label visually-hidden">優先度でフィルタ</label>
-                <select 
-                    class="form-select form-select-sm" 
-                    name="priority" 
-                    id="priority-select" 
-                    {# 変更時にフォームを自動送信 #}
-                    onchange="document.getElementById('filter-form').submit();">
-                    
-                    <option value="">全ての優先度</option>
-                    
-                    {# Taskモデルで定義された優先度の選択肢をループ #}
+            {# --- 優先度フィルタ --- #}
+            <div>
+                <select class="form-select form-select-sm" name="priority" onchange="this.form.submit();" style="width: 85px; font-size: 0.75rem;">
+                    <option value="">優先度</option>
                     {% for priority_id, priority_name in priority_choices %}
                         <option value="{{ priority_id }}" {% if priority_id|stringformat:"s" == current_priority_filter %}selected{% endif %}>
                             {{ priority_name }}
@@ -102,102 +87,49 @@
                 </select>
             </div>
 
-            {# ソート情報を維持するための hidden フィールド #}
-            {# フィルタリング実行後も現在のソート状態を維持するために必要 #}
+            {# 条件維持用の隠しフィールド #}
+            <input type="hidden" name="q" value="{{ current_search_query|default:'' }}">
             <input type="hidden" name="sort" value="{{ current_sort_key }}">
             <input type="hidden" name="order" value="{{ current_order }}">
         </form>
-
-        {# タスク作成ボタン (右端) #}
-        <div class="ms-auto">
-            <a href="{% url 'task_create' %}" class="btn btn-primary text-nowrap">+ 新しいタスクを作成</a>
-        </div>
-        
     </div>
 
-    
-    {# 2. フィルタリング/検索中であることを示すアラート #}
-    {# カテゴリ/進捗状況/優先度/検索キーワードのいずれかが適用されている場合に表示 #}
-    {% if current_category_filter or current_status_filter or current_priority_filter or current_search_query %}
-        
-        {# フィルタリング解除用のURLを作成 #}
-        {% with clear_filter_url='?sort='|add:current_sort_key|add:'&order='|add:current_order %}
-            
-            <div class="alert alert-warning small py-1 px-3 d-flex align-items-center">
-                <span class="me-3 fw-bold">フィルタリング/検索中</span>
-                
-                {# 全てのフィルターを解除し、ソート情報のみを維持するリンク #}
-                <a href="{% url 'home' %}{{ clear_filter_url }}" class="text-decoration-none text-dark">(解除)</a>
-            </div>
-        {% endwith %}
-    {% endif %}
     <hr>
 
+    {# フィルタ解除アラート (もしあれば表示) #}
+    {% if current_category_filter or current_status_filter or current_priority_filter or current_search_query %}
+        <div class="alert alert-warning py-2 mb-3 d-flex justify-content-between align-items-center">
+            <span>検索・フィルタ適用中</span>
+            <a href="{% url 'home' %}" class="btn btn-sm btn-outline-dark">全て解除</a>
+        </div>
+    {% endif %}
+
     {# ============================================================================== #}
-    {# 3. インラインCSS: 進捗状況ドロップダウンのカスタムスタイル定義 #}
+    {# 4. タスク一覧テーブル & カスタムCSS #}
     {# ============================================================================== #}
     <style>
-        /* デフォルトのselectのスタイル */
+        /* ステータスセレクトボックスの基本デザイン（JSで動的に色変更） */
         .status-select {
-            padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+            padding: 0.25rem 0.5rem;
             padding-right: 1.5rem !important; 
-            
             font-size: 0.85rem !important;
             background-color: transparent !important;
             color: #212529; 
             font-weight: bold;
-            padding: 0.25rem 0.5rem;
-            line-height: 1.5;
             border: 1px solid transparent;
             border-radius: 0.25rem;
             cursor: pointer;
-            box-shadow: none !important;
-            -webkit-appearance: none; 
-            -moz-appearance: none;
             appearance: none;
             text-align: center;
         }
         
-        /* 各ステータスの色クラスを定義 */
-        
-        /* 1. 未着手 (Danger: 赤) */
-        .bg-danger-select { 
-            background-color: #dc3545 !important;
-            color: white; 
-        }
-        
-        /* 2. 進行中 (Warning: 黄) */
-        .bg-warning-select { 
-            background-color: #ffc107 !important; 
-            color: #212529; 
-        } 
-        
-        /* 3. 完了 (Success: 緑) */
-        .bg-success-select { 
-            background-color: #198754 !important; 
-            color: white; 
-        }
+        /* ステータス別の背景色定義 */
+        .bg-danger-select { background-color: #dc3545 !important; color: white; }
+        .bg-warning-select { background-color: #ffc107 !important; color: #212529; } 
+        .bg-success-select { background-color: #198754 !important; color: white; }
 
-        .status-select option {
-            text-align: left !important;
-            background-color: white !important;
-            color: #212529 !important;
-            font-weight: normal; 
-            font-size: 0.85rem !important;
-        }
-    
-        /* 選択されているオプションのスタイルもリセット */
-        .status-select option:checked {
-            background-color: #0d6efd !important; 
-            color: white !important;
-        }
-
-        /* フォームの親要素にアイコン用のスペースを確保 */
-        .select-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-        /* カスタムのドロップダウンアイコンを右端に配置 */
+        /* セレクトボックス内の矢印アイコン配置 */
+        .select-wrapper { position: relative; display: inline-block; }
         .select-wrapper::after {
             content: '▼'; 
             position: absolute;
@@ -206,153 +138,65 @@
             transform: translateY(-50%);
             pointer-events: none; 
             font-size: 0.7em;
-            line-height: 1;
             color: inherit; 
         }
 
-        .table-striped tbody td {
-            background-color: transparent !important;
+        /* テーブル幅のレスポンシブ微調整 */
+        .table-tasks thead th:first-child { width: 100%; }
+        .table-tasks thead th:nth-child(2) { min-width: 155px; } /* 期限列 */
+        .table-tasks thead th:nth-child(3) { min-width: 105px; } /* 進捗列 */
+        .table-tasks thead th:nth-child(4) { min-width: 90px; }  /* 優先度列 */
+
+        /* タイトルリンクをセル全体に広げる設定 */
+        .table-tasks tbody td { position: relative; }
+        .table-tasks tbody td a.stretched-link-task::after {
+            content: "";
+            position: absolute;
+            top: 0; bottom: 0; left: 0; right: 0;
+            z-index: 1; pointer-events: auto;
         }
-
-        /* タイトル列の幅を調整するCSS */
-        /* タイトル列のヘッダーとデータセルに柔軟な幅を与える */
-        .table-tasks thead th:first-child,
-        .table-tasks tbody td:first-child {
-            width: 100%; 
-        }
-        
-        /* 期限列の最小幅を確保するCSS */
-        .table-tasks thead th:nth-child(2), 
-        .table-tasks tbody td:nth-child(2) {
-            /* 日付と時刻が並ぶために必要な最小限の幅（例: 130px）を確保 */
-            min-width: 155px; 
-        }
-
-        /* 進捗状況列の最小幅を確保するCSS */
-        .table-tasks thead th:nth-child(3), 
-        .table-tasks tbody td:nth-child(3) {
-            min-width: 105px; /* 「進捗状況」とアイコンが収まる幅 */
-        }
-
-        /* 優先度列の最小幅を確保するCSS */
-        .table-tasks thead th:nth-child(4), 
-        .table-tasks tbody td:nth-child(4) {
-            min-width: 90px; 
-        }
-
-        .table-tasks thead th a {
-            white-space: nowrap;
-        }
-
-        /* タスク名セルのリンクを拡張するためのCSS */
-    /* 親要素（<td>）を相対位置指定の基準にする */
-    .table-tasks tbody td {
-        position: relative;
-    }
-
-    /* タスク名リンク（<a>）をセル全体に広げる */
-    .table-tasks tbody td a.stretched-link-task {
-        /* Bootstrapのstretched-linkクラスと同等の効果を適用 */
-        position: static; /* 既存のリンクのpositionをリセット */
-    }
-
-    /* Bootstrap 5 の stretched-link クラスが存在する場合、それを使う方が良いですが、
-       存在しない環境のために、擬似要素を使ってセル全体をカバーします */
-    .table-tasks tbody td a.stretched-link-task::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1; /* 他の要素より手前に配置 */
-        pointer-events: auto; /* クリックを有効にする */
-    }
-
     </style>
 
-
-    {# ============================================================================== #}
-    {# 4. タスク一覧テーブル #}
-    {# ============================================================================== #}
     {% if tasks %}
         <div class="table-responsive">
             <table class="table table-striped table-hover table-tasks">
                 <thead>
                     <tr>
-                        {# ヘッダー行のループ (ソートリンクの生成) #}
+                        {# ヘッダー行のループ #}
                         {% with current_sort=current_sort_key current_order=current_order %}
-                            
                             {% for key, label in sort_headers.items %}
-                                <th scope="col">
-                                    {# ソートキーとオーダーをクエリパラメータとして含むリンクを生成 #}
-                                    {% if current_sort == key and current_order == 'asc' %}
-                                        {# 現在 昇順(asc) の場合 -> 次は 降順(desc) #}
-                                        {% with next_order='desc' %}
-                                            <a href="?{% if current_search_query %}q={{ current_search_query }}&{% endif %}{% if selected_category_id %}category={{ selected_category_id }}&{% endif %}{% if current_status_filter %}status={{ current_status_filter }}&{% endif %}{% if current_priority_filter %}priority={{ current_priority_filter }}&{% endif %}sort={{ key }}&order={{ next_order }}" class="text-decoration-none text-dark d-flex align-items-center">
-                                                {{ label }}
-                                                <span class="ms-2">▲</span> {# 昇順アイコン #}
-                                            </a>
-                                        {% endwith %}
-                                        
-                                    {% elif current_sort == key %}
-                                        {# 現在 降順(desc) の場合 -> 次は 昇順(asc) #}
-                                        {% with next_order='asc' %}
-                                            <a href="?{% if current_search_query %}q={{ current_search_query }}&{% endif %}{% if selected_category_id %}category={{ selected_category_id }}&{% endif %}{% if current_status_filter %}status={{ current_status_filter }}&{% endif %}{% if current_priority_filter %}priority={{ current_priority_filter }}&{% endif %}sort={{ key }}&order={{ next_order }}" class="text-decoration-none text-dark d-flex align-items-center">
-                                                {{ label }}
-                                                <span class="ms-2">▼</span> {# 降順アイコン #}
-                                            </a>
-                                        {% endwith %}
-                                            
-                                    {% else %}
-                                        {# ソートされていない列の場合 -> 次は デフォルトの昇順(asc) #}
-                                        {% with next_order='asc' %}
-                                            <a href="?{% if current_search_query %}q={{ current_search_query }}&{% endif %}{% if selected_category_id %}category={{ selected_category_id }}&{% endif %}{% if current_status_filter %}status={{ current_status_filter }}&{% endif %}{% if current_priority_filter %}priority={{ current_priority_filter }}&{% endif %}sort={{ key }}&order={{ next_order }}" class="text-decoration-none text-dark d-flex align-items-center">
-                                                {{ label }}
-                                                {# ソートアイコンなし #}
-                                            </a>
-                                        {% endwith %}
-                                    {% endif %}
+                                {# 💡 text-nowrap を追加して、スマホでも「タスク名」が改行されないように固定 #}
+                                <th scope="col" class="text-nowrap">
+                                    <a href="?{% if current_search_query %}q={{ current_search_query }}&{% endif %}{% if selected_category_id %}category={{ selected_category_id }}&{% endif %}{% if current_status_filter %}status={{ current_status_filter }}&{% endif %}{% if current_priority_filter %}priority={{ current_priority_filter }}&{% endif %}sort={{ key }}&order={% if current_sort == key and current_order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark d-flex align-items-center">
+                                        {{ label }}
+                                        {% if current_sort == key %}
+                                            <span class="ms-1">{% if current_order == 'asc' %}▲{% else %}▼{% endif %}</span>
+                                        {% endif %}
+                                    </a>
                                 </th>
                             {% endfor %}
-                            
                         {% endwith %}
                         <th scope="col" class="text-nowrap">カテゴリ</th>
-                        <th scope="col" class="text-end text-nowrap">操作</th> {# 操作列のヘッダーを追加 #}
                     </tr>
                 </thead>
                 
                 <tbody>
-                    {# タスクデータの表示ループ #}
                     {% for task in tasks %}
                         <tr>
-                            {# タスクタイトル (詳細ページへのリンク) #}
                             <td>
                                 <a href="{% url 'task_detail' task.pk %}" class="fw-bold text-decoration-none text-dark stretched-link-task">
                                     {{ task.title }}
                                 </a>
                             </td>
-                            
-                            {# 期限 (format: YYYY/MM/DD HH:MM) #}
                             <td class="text-nowrap">{{ task.due_date|date:"Y/m/d H:i"|default:"-" }}</td>
-                            
-                            {# 進捗状況のインライン編集フォーム #}
                             <td>
-                                {# ステータス変更はPOSTリクエストで行い、完了後に現在のリストに戻る #}
-                                <form action="{% url 'task_update_status' task.pk %}" method="post" class="status-update-form">
+                                <form action="{% url 'task_update_status' task.pk %}" method="post">
                                     {% csrf_token %}
-
-                                    {# フィルタ・ソートの状態を保持するための hidden input #}
                                     <input type="hidden" name="filter_params" value="{{ request.GET.urlencode }}">
-
                                     <div class="select-wrapper">
-                                        {# 変更時にフォームを自動送信し、色を更新するJavaScriptを呼び出す #}
                                         <select name="new_status" class="status-select" onchange="updateSelectColor(this); this.form.submit()">
                                             {% for status_id, status_name in status_choices %}
-                                                
-                                                <option value="{{ status_id }}" 
-                                                        {% if status_id == task.status %}selected{% endif %}
-                                                        {# JavaScriptで色付けするためのデータ属性 #}
+                                                <option value="{{ status_id }}" {% if status_id == task.status %}selected{% endif %}
                                                         data-color="{% if status_id == 0 %}danger{% elif status_id == 1 %}warning{% else %}success{% endif %}">
                                                     {{ status_name }}
                                                 </option>
@@ -361,38 +205,19 @@
                                     </div>
                                 </form>
                             </td>
-                            
-                            {# 優先度の表示 (バッジ) #}
                             <td>
-                                {% if task.priority == 'high' %}
-                                    <span class="badge bg-danger">高</span>
-                                {% elif task.priority == 'medium' %}
-                                    <span class="badge bg-warning text-dark">中</span>
-                                {% elif task.priority == 'low' %}
-                                    <span class="badge bg-success">低</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">なし</span>
-                                {% endif %}
+                                {% if task.priority == 'high' %}<span class="badge bg-danger">高</span>
+                                {% elif task.priority == 'medium' %}<span class="badge bg-warning text-dark">中</span>
+                                {% elif task.priority == 'low' %}<span class="badge bg-success">低</span>
+                                {% else %}<span class="badge bg-secondary">なし</span>{% endif %}
                             </td>
-
-                            {# カテゴリの表示 (バッジ) #}
                             <td><span class="badge bg-info text-nowrap">{{ task.category.name|default:"なし" }}</span></td>
-                            
-                            {# 操作ボタン #}
-                            <td class="text-end text-nowrap">
-                                {# 編集ボタン (TaskUpdateViewへ遷移) #}
+                            <td class="text-end text-nowrap" style="position: relative; z-index: 2;">
                                 <a href="{% url 'task_update' task.pk %}" class="btn btn-sm btn-outline-warning me-2">編集</a>
-                                
-                                {# 削除ボタン (TaskDeleteViewへPOST送信) #}
                                 <form action="{% url 'task_delete' task.pk %}" method="post" style="display:inline;">
                                     {% csrf_token %}
-                                    
-                                    {# 削除後のリダイレクト先として現在のフィルタ・ソート状態を渡す #}
                                     <input type="hidden" name="filter_params" value="{{ request.GET.urlencode }}">
-        
-                                    <button type="submit" onclick="return confirm('本当に削除しますか？');" class="btn btn-sm btn-outline-danger">
-                                        削除
-                                    </button>
+                                    <button type="submit" onclick="return confirm('本当に削除しますか？');" class="btn btn-sm btn-outline-danger">削除</button>
                                 </form>
                             </td>
                         </tr>
@@ -401,37 +226,22 @@
             </table>
         </div>
     {% else %}
-        {# タスクが存在しない場合のメッセージ #}
-        <div class="alert alert-info">
-            現在のタスクはありません。
-        </div>
+        <div class="alert alert-info">現在のタスクはありません。</div>
     {% endif %}
 
     {# ============================================================================== #}
-    {# 5. JavaScript: ステータスセレクトボックスの色付けロジック #}
+    {# 5. JavaScript: インライン編集時の色付け #}
     {# ============================================================================== #}
     <script>
-        // 選択されたオプションに基づいてselectボックスの背景色を更新する関数
         function updateSelectColor(selectElement) {
             const selectedOption = selectElement.options[selectElement.selectedIndex];
-            // 選択されたオプションの data-color 属性から色を取得
             const color = selectedOption.getAttribute('data-color');
-            
-            // 既存の色クラスを削除
             selectElement.classList.remove('bg-danger-select', 'bg-warning-select', 'bg-success-select');
-            
-            // 新しい色クラスを追加 (CSSセクションで定義)
-            if (color) {
-                selectElement.classList.add(`bg-${color}-select`);
-            }
+            if (color) selectElement.classList.add(`bg-${color}-select`);
         }
 
-        // ページ読み込み時にすべてのステータスセレクトボックスの色を初期設定する
         document.addEventListener('DOMContentLoaded', () => {
-            const selectBoxes = document.querySelectorAll('.status-select');
-            selectBoxes.forEach(selectElement => {
-                updateSelectColor(selectElement);
-            });
+            document.querySelectorAll('.status-select').forEach(updateSelectColor);
         });
     </script>
 

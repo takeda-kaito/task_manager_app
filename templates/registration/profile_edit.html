@@ -2,13 +2,49 @@
 
 {% block content %}
 
+{# ============================================================================== #}
+{# 1. カスタムCSS: 縦並びとコンパクトな幅の制御 #}
+{# ============================================================================== #}
+<style>
+    /* ラベルを1行独立させ、入力欄をその下に配置 */
+    .form-label {
+        display: block !important;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* 入力欄を300pxに制限（パスワード画面と統一） */
+    input[type="text"], 
+    input[type="email"],
+    input[type="password"],
+    select {
+        display: block;
+        width: 100%;
+        max-width: 300px;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        box-sizing: border-box;
+    }
+
+    /* 説明文とエラーメッセージの幅を統一 */
+    .form-text, .alert-danger {
+        display: block;
+        max-width: 300px;
+        font-size: 0.8rem;
+        margin-top: 0.4rem;
+    }
+</style>
+
 <div class="row justify-content-center">
-    {# コンテンツの幅を制限し、中央に表示 #}
+    {# コンテンツを中央に配置 #}
     <div class="col-md-8 col-lg-6">
         
-        <h1 class="mb-4">プロフィール編集</h1>
-        {# ユーザーへの案内メッセージ #}
-        <p class="text-muted">アカウント情報を更新できます。（パスワードはここでは変更できません）</p>
+        <h1 class="mb-4">アカウント情報の編集</h1>
+        
+        <p class="text-muted small">アカウント情報を更新できます。（パスワードはここでは変更できません）</p>
         
         <hr>
 
@@ -16,37 +52,44 @@
             {% csrf_token %}
             
             {# ============================================================================== #}
-            {# フォームフィールドのレンダリングループ #}
-            {# フォームに含まれるすべてのフィールド（例: ユーザー名、メールアドレス、氏名など）を表示 #}
+            {# 2. フォームフィールドのレンダリングループ #}
             {# ============================================================================== #}
             {% for field in form %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                <div class="mb-4">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        {{ field.label }}
+                    </label>
                     
                     {# 入力フィールドの表示 #}
                     {{ field }}
                     
-                    {# フィールドごとのエラーメッセージ #}
-                    {% for error in field.errors %}
-                        <div class="alert alert-danger mt-1 p-2 small">{{ error }}</div>
-                    {% endfor %}
-                    
                     {# ヘルプテキスト #}
                     {% if field.help_text %}
-                        <div class="form-text">{{ field.help_text }}</div>
+                        <div class="form-text text-muted">{{ field.help_text|safe }}</div>
                     {% endif %}
+
+                    {# フィールドごとのエラーメッセージ #}
+                    {% for error in field.errors %}
+                        <div class="alert alert-danger mt-2 py-1 px-3 small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
                 </div>
             {% endfor %}
 
             {# ============================================================================== #}
-            {# アクションボタン #}
+            {# 3. アクションボタン（自然なサイズのまま縦並び） #}
             {# ============================================================================== #}
-            <div class="d-flex justify-content-between mt-4">
-                {# キャンセルボタン: タスク一覧へ戻る #}
-                <a href="{% url 'home' %}" class="btn btn-secondary">キャンセル</a>
+            <div class="d-flex flex-column align-items-start mt-5 pb-5">
+                {# 保存ボタン #}
+                <button type="submit" class="btn btn-primary mb-3">
+                    更新を保存
+                </button>
                 
-                {# 送信ボタン #}
-                <button type="submit" class="btn btn-primary">更新を保存</button>
+                {# キャンセルボタン #}
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    キャンセル
+                </a>
             </div>
         </form>
         

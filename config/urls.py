@@ -40,64 +40,64 @@ urlpatterns = [
     # ホームページ (タスク一覧表示)
     path('', TaskListView.as_view(), name='home'), 
     
-    # タスクのステータス更新 (Ajax/フォームからの個別更新を想定)
+    # タスクのステータス更新
     path('task/update_status/<int:pk>/', views.TaskUpdateStatusView.as_view(), name='task_update_status'),
 
     # タスク作成ページ
     path('tasks/create/', TaskCreateView.as_view(), name='task_create'),
 
-    # タスク詳細ビュー (特定のタスクIDを指定)
+    # タスク詳細ビュー
     path('tasks/<int:pk>/details/', views.TaskDetailView.as_view(), name='task_detail'), 
 
-    # タスク編集ページ（特定のタスクIDを指定）
+    # タスク編集ページ
     path('tasks/<int:pk>/edit/', TaskUpdateView.as_view(), name='task_update'), 
     
-    # タスク削除処理（特定のタスクIDを指定、論理削除）
+    # タスク削除処理
     path('tasks/<int:pk>/delete/', TaskDeleteView.as_view(), name='task_delete'), 
     
-    # ゴミ箱一覧 (論理削除されたタスクの一覧)
+    # ゴミ箱一覧
     path('tasks/trash/', TrashView.as_view(), name='trash'), 
     
-    # タスク復元処理（特定のタスクIDを指定）
+    # タスク復元処理
     path('tasks/<int:pk>/restore/', TaskRestoreView.as_view(), name='task_restore'), 
 
-    # タスクの一括物理削除処理 (ゴミ箱からの完全削除)
+    # タスクの一括物理削除処理
     path('tasks/bulk-delete/', TaskBulkDeleteView.as_view(), name='task_bulk_delete'),
 
     # --------------------------------------------------
     # カテゴリ機能 (Category Management URLs)
     # --------------------------------------------------
     
-    # カテゴリ一覧ページ (カテゴリ管理のメイン画面)
+    # カテゴリ一覧ページ
     path('categories/', CategoryListView.as_view(), name='category_list'),
     
     # カテゴリ作成ページ
     path('categories/create/', CategoryCreateView.as_view(), name='category_create'),
     
-    # カテゴリ編集ページ（特定のカテゴリIDを指定）
+    # カテゴリ編集ページ
     path('category/update/<int:pk>/', views.CategoryUpdateView.as_view(), name='category_update'),
     
-    # カテゴリ削除処理（特定のカテゴリIDを指定）
+    # カテゴリ削除処理
     path('categories/delete/<int:pk>/', CategoryDeleteView.as_view(), name='category_delete'),
 
     # --------------------------------------------------
     # 認証・ユーザーアカウント機能 (Authentication & Account URLs)
     # --------------------------------------------------
     
+    # 💡 修正箇所：自作のログアウトビューを一番上に配置（GETリクエスト対応）
+    # path内の 'accounts/logout/' を指定することで標準のincludeよりも先にマッチさせます
+    path('accounts/logout/', views.logout_view, name='logout'),
+
     # Django標準の認証URLをインクルード (login, password_reset, etc.)
-    # ただし、一部はカスタムビューで上書きしている
     path('accounts/', include('django.contrib.auth.urls')),
     
     # ユーザー登録ページ
     path('accounts/register/', UserRegisterView.as_view(), name='register'),
     
-    # ログアウト処理 (標準ビューを使用)
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-    
-    # 登録完了画面 (TemplateViewでテンプレートを直接表示)
-    path('accounts/register/complete/', 
-              TemplateView.as_view(template_name='registration_success.html'), 
-              name='registration_complete'),
+    # 登録完了画面
+    path('accounts/register/success/', 
+            TemplateView.as_view(template_name='registration/registration_success.html'), 
+            name='registration_success'),
 
     # ユーザープロフィール（アカウント情報）編集ページ
     path('accounts/profile/edit/', views.UserUpdateView.as_view(), name='profile_edit'),
@@ -106,7 +106,6 @@ urlpatterns = [
     path('accounts/password_change/', 
               auth_views.PasswordChangeView.as_view(
                   template_name='registration/password_change_form.html',
-                  # 成功時のリダイレクト先を 'password_change_done' に指定
                   success_url=reverse_lazy('password_change_done') 
               ), 
               name='password_change'),
@@ -118,5 +117,7 @@ urlpatterns = [
               ), 
               name='password_change_done'),
 
+    # タスク完了切り替え処理
     path('tasks/<int:pk>/complete/', views.task_complete, name='task_complete'),
+
 ]
