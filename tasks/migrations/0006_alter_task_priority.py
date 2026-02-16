@@ -12,21 +12,26 @@ class Migration(migrations.Migration):
     # このマイグレーションが依存するマイグレーションを指定
     dependencies = [
         # 0005 の後に実行される
-        ('tasks', '0005_task_priority'),
+        ("tasks", "0005_task_priority"),
     ]
 
     # データベースに対して実行される操作のリスト
     operations = [
         # 1. Task モデルの 'priority' フィールドを変更
         migrations.AlterField(
-            model_name='task',
-            name='priority',
+            model_name="task",
+            name="priority",
             # 選択肢リストに ('none', 'なし') を追加し、デフォルト値を 'none' に変更
             field=models.CharField(
-                choices=[('none', 'なし'), ('low', '低'), ('medium', '中'), ('high', '高')], # 新しい優先度の選択肢
-                default='none', # デフォルト値を 'none' に設定
-                max_length=10, 
-                verbose_name='優先度' 
+                choices=[
+                    ("none", "なし"),
+                    ("low", "低"),
+                    ("medium", "中"),
+                    ("high", "高"),
+                ],  # 新しい優先度の選択肢
+                default="none",  # デフォルト値を 'none' に設定
+                max_length=10,
+                verbose_name="優先度",
             ),
         ),
     ]

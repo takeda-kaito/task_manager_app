@@ -24,47 +24,88 @@ class Migration(migrations.Migration):
     operations = [
         # --- Category モデルの作成 ---
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
                 # プライマリキー（自動インクリメント、非同期対応）
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 # カテゴリ名
-                ('name', models.CharField(max_length=50)),
+                ("name", models.CharField(max_length=50)),
                 # ユーザーとの外部キーリレーション
                 # on_delete=CASCADE: ユーザーが削除されたら、そのカテゴリも削除
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             # 📝 Note: models.pyで定義された unique_together の制約は、通常次のマイグレーションで追加されます
         ),
         # --- Task モデルの作成 ---
         migrations.CreateModel(
-            name='Task',
+            name="Task",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('due_date', models.DateTimeField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("due_date", models.DateTimeField(blank=True, null=True)),
                 # ステータスフィールドと選択肢 (0:未着手, 1:進行中, 2:完了)
-                ('status', models.IntegerField(choices=[(0, '未着手'), (1, '進行中'), (2, '完了')], default=0)),
+                (
+                    "status",
+                    models.IntegerField(
+                        choices=[(0, "未着手"), (1, "進行中"), (2, "完了")], default=0
+                    ),
+                ),
                 # 論理削除フラグ
-                ('is_deleted', models.BooleanField(default=False)),
+                ("is_deleted", models.BooleanField(default=False)),
                 # 削除日時
-                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ("deleted_at", models.DateTimeField(blank=True, null=True)),
                 # 作成日時 (自動設定)
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
                 # 更新日時 (自動更新)
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
                 # カテゴリとの外部キーリレーション
                 # on_delete=SET_NULL: カテゴリが削除されてもタスクは残り、categoryフィールドがNULLになる
-                ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='tasks.category')),
+                (
+                    "category",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="tasks.category",
+                    ),
+                ),
                 # ユーザーとの外部キーリレーション
                 # on_delete=CASCADE: ユーザーが削除されたら、そのタスクも削除
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             # モデルオプションの定義
             options={
                 # デフォルトの並び順 (due_date降順, created_at降順)
-                'ordering': ['-due_date', '-created_at'],
+                "ordering": ["-due_date", "-created_at"],
             },
         ),
     ]

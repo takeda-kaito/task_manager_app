@@ -12,16 +12,16 @@ class Migration(migrations.Migration):
     # このマイグレーションが依存するマイグレーションを指定
     dependencies = [
         # 0002_alter_task_options_alter_category_name の後に実行される
-        ('tasks', '0002_alter_task_options_alter_category_name'),
+        ("tasks", "0002_alter_task_options_alter_category_name"),
     ]
 
     # データベースに対して実行される操作のリスト
     operations = [
         # Category モデルのオプション変更
         migrations.AlterModelOptions(
-            name='category',
+            name="category",
             # 'verbose_name_plural' (複数形での表示名) を 'Categories' に設定
             # 📝 Note: 日本語環境での表示名を設定するために、models.pyでさらに変更されている可能性があります。
-            options={'verbose_name_plural': 'Categories'},
+            options={"verbose_name_plural": "Categories"},
         ),
     ]

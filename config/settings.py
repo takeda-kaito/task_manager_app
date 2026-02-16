@@ -20,14 +20,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ==============================================================================
 
 # SECURITY WARNING: 本番環境では機密保持が必須！環境変数から取得することを推奨。
-SECRET_KEY = 'django-insecure-53f1s^*3t5p#ds++apb=4a_8rw5@zorf5=jg!)k!m-bo&(s%5a'
+SECRET_KEY = "django-insecure-53f1s^*3t5p#ds++apb=4a_8rw5@zorf5=jg!)k!m-bo&(s%5a"
 
 # SECURITY WARNING: 本番環境では必ず False に設定すること。
 DEBUG = False
 
 # このDjangoサイトがサービスを提供するホスト名を定義。
 # DEBUG=False の場合は、ここにドメイン名を指定する必要がある。
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # ==============================================================================
@@ -37,52 +37,51 @@ ALLOWED_HOSTS = ['*']
 # プロジェクトで使用するアプリケーションを登録。
 INSTALLED_APPS = [
     # 標準のDjango組み込みアプリ
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # --- 独自に作成したAppをここから下に登録 ---
-    'tasks',  # タスク管理機能を提供するアプリケーション
+    "tasks",  # タスク管理機能を提供するアプリケーション
 ]
 
 # HTTPリクエスト処理の途中で実行されるミドルウェアを定義。
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF保護
-    'django.contrib.auth.middleware.AuthenticationMiddleware', # 認証（ログイン状態など）を処理
-    'django.contrib.messages.middleware.MessageMiddleware', # メッセージフレームワークを処理
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', # クリックジャッキング保護
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",  # CSRF保護
+    "django.contrib.auth.middleware.AuthenticationMiddleware",  # 認証（ログイン状態など）を処理
+    "django.contrib.messages.middleware.MessageMiddleware",  # メッセージフレームワークを処理
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",  # クリックジャッキング保護
 ]
 
 # プロジェクトのメインのURL設定ファイルを指定。
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 # テンプレートエンジンとテンプレートファイルの場所を設定。
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
         # プロジェクト全体で共通のテンプレートを配置するディレクトリ
-        'DIRS': [BASE_DIR / 'templates'], 
-        'APP_DIRS': True, # アプリケーションディレクトリ内の 'templates' フォルダを探索する
-        'OPTIONS': {
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,  # アプリケーションディレクトリ内の 'templates' フォルダを探索する
+        "OPTIONS": {
             # テンプレートコンテキストに自動で追加される変数を定義
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 # WSGIアプリケーションエントリーポイント (本番環境でのデプロイに使用)
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # ==============================================================================
@@ -91,9 +90,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # SQLiteをデフォルトのデータベースとして使用。開発環境での標準設定。
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3', # プロジェクトルートにデータベースファイルを配置
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR
+        / "db.sqlite3",  # プロジェクトルートにデータベースファイルを配置
     }
 }
 
@@ -105,16 +105,16 @@ DATABASES = {
 # ユーザーが設定するパスワードの強度を検証するルールを定義。
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -124,10 +124,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # ==============================================================================
 
 # サイトのデフォルト言語コードを日本語に設定。
-LANGUAGE_CODE = 'ja'
+LANGUAGE_CODE = "ja"
 
 # サイトのデフォルトタイムゾーンを東京に設定。
-TIME_ZONE = 'Asia/Tokyo'
+TIME_ZONE = "Asia/Tokyo"
 
 # 国際化（i18n）サポートを有効化（言語・ロケール）。
 USE_I18N = True
@@ -141,7 +141,7 @@ USE_TZ = True
 # ==============================================================================
 
 # 静的ファイル（CSS, JS, 画像）の参照URLパスを定義。
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 
 # ==============================================================================
@@ -149,15 +149,15 @@ STATIC_URL = 'static/'
 # ==============================================================================
 
 # モデルの主キーのデフォルトタイプを指定。
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ログイン成功後のリダイレクト先URL。
 # '/' はプロジェクトルート（タスク一覧ページ）を指す。
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = "/"
 
 # ログアウト後のリダイレクト先URL。
 # /accounts/login/ は、Djangoの認証ビューが提供するログインページを指す。
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # ユーザー登録後の自動ログインを無効化する設定（明示的なログインを強制）。
 REGISTRATION_AUTO_LOGIN = False
@@ -173,11 +173,11 @@ import dj_database_url
 # --- データベース設定の補完 ---
 # Renderの環境変数 DATABASE_URL がある場合、自動的に PostgreSQL に接続します
 db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+DATABASES["default"].update(db_from_env)
 
 # --- 静的ファイル (CSS/JS) の本番設定 ---
 # 本番環境で静的ファイルを集約するディレクトリを指定
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # WhiteNoise（静的ファイル配信用のライブラリ）を使用するための設定
 # ※これを行うには MIDDLEWARE に WhiteNoise を追加する必要があります（後述）

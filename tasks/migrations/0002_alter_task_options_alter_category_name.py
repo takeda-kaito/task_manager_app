@@ -8,27 +8,26 @@ class Migration(migrations.Migration):
     このマイグレーションは、Taskモデルのソートオプションを変更し、
     Categoryモデルの 'name' フィールドの最大長を更新します。
     """
-    
+
     # このマイグレーションが依存するマイグレーションを指定
     dependencies = [
         # 最初のマイグレーション（0001_initial）の後に実行される
-        ('tasks', '0001_initial'),
+        ("tasks", "0001_initial"),
     ]
 
     # データベースに対して実行される操作のリスト
     operations = [
         # 1. Task モデルのオプション変更
         migrations.AlterModelOptions(
-            name='task',
-            # 'ordering' オプションを更新: 
+            name="task",
+            # 'ordering' オプションを更新:
             # 期限 (due_date) の昇順でソートし、次に作成日時 (created_at) の降順でソートする
-            options={'ordering': ['due_date', '-created_at']},
+            options={"ordering": ["due_date", "-created_at"]},
         ),
-        
         # 2. Category モデルのフィールド変更
         migrations.AlterField(
-            model_name='category',
-            name='name',
+            model_name="category",
+            name="name",
             # name フィールドの最大長を50文字から190文字に拡張
             # (これはユニーク制約が設定される際などに、インデックスの制限に対応するためによく行われる変更です)
             field=models.CharField(max_length=190),
