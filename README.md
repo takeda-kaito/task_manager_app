@@ -24,7 +24,7 @@
 
 - **バックエンド**: Python 3.13.9 / Django
 - **フロントエンド**: HTML5 / CSS3 / JavaScript / Bootstrap 5
-- **デプロイ**: Render
+- **ツール**: VS Code / Git / GitHub / Render
 
 ## 使い方・環境構築
 
